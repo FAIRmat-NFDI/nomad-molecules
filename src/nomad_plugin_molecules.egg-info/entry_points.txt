@@ -1,0 +1,2 @@
+[nomad.plugin]
+moleculenormalizer = nomad_plugin_molecules.normalizers:moleculenormalizer
