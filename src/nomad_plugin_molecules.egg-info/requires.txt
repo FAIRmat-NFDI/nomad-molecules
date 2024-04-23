@@ -1,5 +1,0 @@
-nomad-lab>=1.2.0
-
-[dev]
-ruff>=0.2.0
-pytest
