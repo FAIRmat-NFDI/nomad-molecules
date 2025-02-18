@@ -11,7 +11,8 @@ authors = [{ name = "The NOMAD Authors" }]
 license = { text = "Apache-2.0" }
 dependencies = [
     "nomad-lab>=1.2.0",
-    "rdkit"
+    "rdkit",
+    "molid @ git+https://gitlab.mpcdf.mpg.de/tdenell/molecule-identification.git",
 ]
 
 [project.urls]
