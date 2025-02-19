@@ -1,30 +1,24 @@
-# nomad_plugin_molecules/normalizers/molecule.py
-
 import numpy as np
 from ase import Atoms
-from molid import query_pubchem_database
-from nomad.utils import get_logger
-# from nomad.normalizing.normalizer import Normalizer
+
+from nomad.normalizing import Normalizer
+from nomad.datamodel import EntryArchive
+from nomad.datamodel.results import Material, System
+# Import disabled since I don't have the molid package installed
+# from molid import query_pubchem_database
 
 
-class MolecularNormalizer:
+class MoleculeNormalizer(Normalizer):
     """Normalizer for molecular data extraction."""
-
-    normalizer_level = 1
-
-    def __init__(self, entry_archive, logger=None):
-        self.entry_archive = entry_archive
-        self.logger = logger or get_logger(__name__)
-
-    def normalize(self) -> list:
+    def normalize(self, archive: EntryArchive, logger=None) -> list:
         self.logger.info("Starting molecular normalization process.")
 
-        if not self.entry_archive.run:
-            return self.entry_archive
+        if not archive.run:
+            return
 
         try:
             # Get the atoms section from the archive
-            atoms_data = self.entry_archive.run[0].system[0].atoms
+            atoms_data = archive.run[0].system[0].atoms
             atoms = self.create_atoms_object(atoms_data)
             inchikey, molecule_data = self.query_molecule_database(atoms)
             # Optionally, attach detailed molecule data:
@@ -32,7 +26,7 @@ class MolecularNormalizer:
             return self.generate_topology(inchikey, molecule_data)
         except Exception as e:
             self.logger.error(f"Error in normalization: {e}", exc_info=True)
-            return self.entry_archive
+            return
 
     def create_atoms_object(self, atoms_data) -> Atoms:
         """Creates an ASE Atoms object from NOMAD atomic data."""
@@ -81,25 +75,21 @@ class MolecularNormalizer:
     #     else:
     #         self.logger.warning(f"No molecule data found for InChIKey {inchikey}.")
 
-    def generate_topology(self, inchikey, molecule_data) -> list:
+    def generate_topology(self, archive, inchikey, molecule_data) -> list:
         """Returns molecular topology data in a format compatible with NOMAD."""
         if not molecule_data:
             self.logger.warning(f"No molecule data found for InChIKey {inchikey}.")
             return []
 
-        from nomad.datamodel.datamodel import EntryArchive
-        # For creating a new material section if needed.
-        from nomad.datamodel.results import Material, System
-
         # Ensure the archive has the results/material section available.
-        if not self.entry_archive.results:
-            self.entry_archive.results = EntryArchive().results
-        if not self.entry_archive.results.material:
-            self.entry_archive.results.material = self.entry_archive.results.m_create(Material)
+        if not archive.results:
+            archive.results = EntryArchive().results
+        if not archive.results.material:
+            archive.results.material = archive.results.m_create(Material)
         # import pdb; pdb.set_trace()
-        topology_container = self.entry_archive.m_xpath('results.material.topology')
+        topology_container = archive.m_xpath('results.material.topology')
         if not topology_container:
-            topology_container = self.entry_archive.results.material.topology
+            topology_container = archive.results.material.topology
 
         # Create a new System to represent the molecule topology.
         topology_entry = System(
