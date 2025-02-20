@@ -20,8 +20,6 @@ class MoleculeNormalizer(Normalizer):
             atoms_data = archive.run[0].system[0].atoms
             atoms = self.create_atoms_object(atoms_data)
             inchikey, molecule_data = self.query_molecule_database(atoms)
-            # Optionally, attach detailed molecule data:
-            # self.attach_molecule_data(inchikey, molecule_data)
             return self.generate_topology(archive, inchikey, molecule_data)
         except Exception as e:
             self.logger.error(f"Error in normalization: {e}", exc_info=True)
@@ -53,26 +51,6 @@ class MoleculeNormalizer(Normalizer):
         except Exception as e:
             self.logger.error(f"Error querying the local PubChem DB: {e}")
             return None, None
-
-    # def attach_molecule_data(self, inchikey, molecule_data):
-    #     """Attaches molecular data to the NOMAD archive."""
-    #     from nomad.datamodel.datamodel import EntryArchive
-    #     from nomad.datamodel.results import Material
-    #     from nomad.datamodel.results.materials import Topology
-
-
-    #     if molecule_data:
-    #         if not self.entry_archive.results:
-    #             self.entry_archive.results = EntryArchive().results
-    #         if not self.entry_archive.results.material:
-    #             self.entry_archive.results.material = self.entry_archive.results.m_create(Material)
-    #         if not self.entry_archive.results.material.topology:
-    #             self.entry_archive.results.material.topology = []
-    #         topology_entry = self.entry_archive.results.material.topology.m_create(Topology)
-    #         topology_entry.building_block = 'molecule'
-    #         self.logger.info(f"Molecular data attached: {inchikey}")
-    #     else:
-    #         self.logger.warning(f"No molecule data found for InChIKey {inchikey}.")
 
     def generate_topology(self, archive, inchikey, molecule_data) -> list:
         """Returns molecular topology data in a format compatible with NOMAD."""
