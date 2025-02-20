@@ -22,6 +22,7 @@ license = { text = "Apache-2.0" }
 dependencies = [
     "nomad-lab>=1.1.7", #1.3.13
     "rdkit",
+    "openbabel-wheel",
     "molid @ git+https://gitlab.mpcdf.mpg.de/tdenell/molecule-identification.git"
 ]
 
