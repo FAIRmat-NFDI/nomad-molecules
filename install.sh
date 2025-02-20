@@ -7,7 +7,7 @@ echo "Updating package list..."
 apt update
 
 # Check if Open Babel is already installed
-if command -v obabel &> /dev/null; then
+if command obabel -V &> /dev/null; then
     echo "Open Babel is already installed. Skipping installation."
 else
     echo "Installing required system dependencies..."
@@ -33,30 +33,5 @@ else
     echo "Verifying Open Babel installation..."
     obabel -H || { echo "Open Babel installation failed"; exit 1; }
 fi
-
-echo "Checking if molid is already installed..."
-if python3 -c "import molid" &> /dev/null; then
-    echo "molid is already installed. Skipping installation."
-else
-    echo "Installing molid..."
-    # Ensure pip is up-to-date
-    pip install --upgrade pip setuptools wheel
-    # Install molid from its repository
-    pip install git+https://gitlab.mpcdf.mpg.de/tdenell/molecule-identification.git
-
-    echo "Verifying molid installation..."
-    if ! python3 -c "import molid; print(molid.__version__)" &> /dev/null; then
-        echo "molid installation failed"
-        exit 1
-    fi
-fi
-
-echo "Installing your normalizer (nomad-plugin-molecules)..."
-# Navigate to the directory containing pyproject.toml
-cd "$SCRIPT_DIR"
-pip install .
-
-echo "Verifying normalizer installation..."
-python3 -c "import nomad_plugin_molecules; print('Normalizer installed successfully')" || { echo "Normalizer installation failed"; exit 1; }
 
 echo "Installation complete!"

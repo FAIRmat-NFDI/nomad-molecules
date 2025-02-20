@@ -4,8 +4,7 @@ from ase import Atoms
 from nomad.normalizing import Normalizer
 from nomad.datamodel import EntryArchive
 from nomad.datamodel.results import Material, System
-# Import disabled since I don't have the molid package installed
-# from molid import query_pubchem_database
+from molid import query_pubchem_database
 
 
 class MoleculeNormalizer(Normalizer):
@@ -23,7 +22,7 @@ class MoleculeNormalizer(Normalizer):
             inchikey, molecule_data = self.query_molecule_database(atoms)
             # Optionally, attach detailed molecule data:
             # self.attach_molecule_data(inchikey, molecule_data)
-            return self.generate_topology(inchikey, molecule_data)
+            return self.generate_topology(archive, inchikey, molecule_data)
         except Exception as e:
             self.logger.error(f"Error in normalization: {e}", exc_info=True)
             return
