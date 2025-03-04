@@ -1,6 +1,6 @@
 import numpy as np
 from ase import Atoms
-
+from matid.geometry import get_dimensionality
 from nomad.datamodel import EntryArchive
 from nomad.datamodel.results import Material, System
 from molid import query_pubchem_database
@@ -52,20 +52,29 @@ def unwrap_atoms(atoms: Atoms) -> Atoms:
     return atoms
 
 
-def validate_atom_count(atoms: Atoms, min_atoms: int, max_atoms: int, logger) -> bool:
+def validate_atom_count(atoms_data, min_atoms: int, max_atoms: int, logger) -> bool:
     """Check if the system has an acceptable number of atoms."""
-    num_atoms = len(atoms)
+    num_atoms = len(atoms_data.species)
     if num_atoms < min_atoms:
         logger.warning(
             f"System has only {num_atoms} atoms, which is less than the minimum required {min_atoms}. Skipping normalization."
         )
-        print(f"System has only {num_atoms} atoms, which is less than the minimum required {min_atoms}. Skipping normalization.")
         return False
     if num_atoms > max_atoms:
         logger.warning(
             f"System has {num_atoms} atoms, which exceeds the maximum allowed {max_atoms}. Skipping normalization."
         )
-        print(f"System has {num_atoms} atoms, which exceeds the maximum allowed {max_atoms}. Skipping normalization.")
+        return False
+    return True
+
+
+def validate_dimensionality(atoms, logger) -> bool:
+    """Check dimensionality"""
+    dimensionality = get_dimensionality(atoms)
+    if dimensionality != 0:
+        logger.warning(
+            f"System is {dimensionality}D, only 0D systems are processed. Skipping normalization."
+        )
         return False
     return True
 
@@ -100,5 +109,4 @@ def generate_topology_util(archive, inchikey, molecule_data, logger) -> list:
         building_block='molecule'
     )
     topology_container.append(topology_entry)
-    print('topology_container after appending:', topology_container)
     return topology_container
