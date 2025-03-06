@@ -25,7 +25,8 @@ def create_atoms_object(atoms_data) -> Atoms:
         cell=lattice_vectors,
         pbc=atoms_data.periodic
     )
-    atoms = unwrap_atoms(atoms)
+    if all(atoms_data.periodic):
+        atoms = unwrap_atoms(atoms)
     return atoms
 
 
@@ -102,6 +103,7 @@ def generate_topology_util(archive, inchikey, molecule_data, logger) -> list:
         archive.results = EntryArchive().results
     if not archive.results.material:
         archive.results.material = archive.results.m_create(Material)
+
     topology_container = archive.results.material.topology
     topology_entry = System(
         method='parser',
@@ -109,4 +111,4 @@ def generate_topology_util(archive, inchikey, molecule_data, logger) -> list:
         building_block='molecule'
     )
     topology_container.append(topology_entry)
-    return topology_container
+    return [topology_entry]
