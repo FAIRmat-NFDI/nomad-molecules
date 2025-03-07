@@ -12,5 +12,5 @@ class MoleculeNormalizerEntryPoint(NormalizerEntryPoint):
 moleculenormalizer = MoleculeNormalizerEntryPoint(
     name='MoleculeNormalizer',
     description='Normalizer that identifies molecules in results.material.topology and adds new molecule-related information extracted from PubChem.',
-    level=2
+    level=4
 )

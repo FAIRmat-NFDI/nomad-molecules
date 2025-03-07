@@ -15,7 +15,6 @@ class MoleculeNormalizer(Normalizer):
         self.logger.info("Starting molecular normalization process.")
 
         if not archive.run:
-            print('archive.run: ', archive.run)
             return
 
         try:
@@ -39,5 +38,4 @@ class MoleculeNormalizer(Normalizer):
             return topology
         except Exception as e:
             self.logger.error(f"Error in normalization: {e}", exc_info=True)
-            print('Error (molecule):', e)
             return
