@@ -50,10 +50,7 @@ jobs:
             python -m pip install --upgrade pip
             pip install -e .
             pip install -r requirements.txt
-        - name: List workspace contents
-          run: |
-            echo ">>> pwd: $(pwd)"
-            ls -R .
+
         - name: Run tests
           run: |
             pytest
