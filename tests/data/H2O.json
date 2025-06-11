@@ -1,0 +1,126 @@
+{
+    "run": [
+        {
+            "system": [
+                {
+                    "type": "molecule / cluster",
+                    "configuration_raw_gid": "fQo7OEYnxpc88wCQYvOr92wLWDwg",
+                    "is_representative": true,
+                    "chemical_composition": "OHH",
+                    "chemical_composition_hill": "H2O",
+                    "chemical_composition_reduced": "H2O",
+                    "atoms": {
+                        "species": [
+                            8,
+                            1,
+                            1
+                        ],
+                        "labels": [
+                            "O",
+                            "H",
+                            "H"
+                        ],
+                        "positions": [
+                            [
+                                0.0,
+                                0.0,
+                                -6.140480000000001e-13
+                            ],
+                            [
+                                7.644331800000001e-11,
+                                0.0,
+                                5.8917024e-11
+                            ],
+                            [
+                                -7.644331800000001e-11,
+                                0.0,
+                                5.8917024e-11
+                            ]
+                        ],
+                        "periodic": [
+                            false,
+                            false,
+                            false
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    "results": {
+        "material": {
+            "structural_type": "molecule / cluster",
+            "dimensionality": "0D",
+            "elements": [
+                "H",
+                "O"
+            ],
+            "chemical_formula_descriptive": "H2O",
+            "chemical_formula_reduced": "H2O",
+            "chemical_formula_hill": "H2O",
+            "chemical_formula_iupac": "H2O",
+            "chemical_formula_anonymous": "A2B",
+            "chemical_formula_reduced_fragments": [
+                "H2",
+                "O"
+            ],
+            "elemental_composition": [
+                {
+                    "element": "H",
+                    "mass": 1.673723746788804e-27,
+                    "atomic_fraction": 0.6666666666666666,
+                    "mass_fraction": 0.11189834407236524
+                },
+                {
+                    "element": "O",
+                    "mass": 2.656762874216004e-26,
+                    "atomic_fraction": 0.3333333333333333,
+                    "mass_fraction": 0.8881016559276347
+                }
+            ],
+            "topology": [
+                {
+                    "system_id": "results/material/topology/0",
+                    "label": "original",
+                    "method": "parser",
+                    "description": "A representative system chosen from the original simulation.",
+                    "dimensionality": "0D",
+                    "elements": [
+                        "H",
+                        "O"
+                    ],
+                    "chemical_formula_descriptive": "H2O",
+                    "chemical_formula_reduced": "H2O",
+                    "chemical_formula_hill": "H2O",
+                    "chemical_formula_iupac": "H2O",
+                    "chemical_formula_anonymous": "A2B",
+                    "atoms_ref": "../run/0/system/0/atoms",
+                    "n_atoms": 3,
+                    "elemental_composition": [
+                        {
+                            "element": "O",
+                            "mass": 2.656762874216004e-26,
+                            "atomic_fraction": 0.3333333333333333,
+                            "mass_fraction": 0.8881016559276347
+                        },
+                        {
+                            "element": "H",
+                            "mass": 1.673723746788804e-27,
+                            "atomic_fraction": 0.6666666666666666,
+                            "mass_fraction": 0.11189834407236524
+                        }
+                    ],
+                    "system_relation": {
+                        "type": "root"
+                    },
+                    "cell": {
+                        "a": 0.0,
+                        "b": 0.0,
+                        "c": 0.0,
+                        "volume": 0.0
+                    }
+                }
+            ]
+        }
+    }
+}
