@@ -21,6 +21,7 @@ authors = [{ name = "The NOMAD Authors" }]
 license = { text = "Apache-2.0" }
 dependencies = [
     "nomad-lab>=1.1.7", #1.3.13
+    "nomad-schema-plugin-run>=1.0.3",
     "rdkit",
     "openbabel-wheel",
     "molid @ git+https://github.com/FAIRmat-NFDI/molid.git"
@@ -112,17 +113,3 @@ where = ["src"]
 
 [project.entry-points.'nomad.plugin']
 moleculenormalizer = "nomad_plugin_molecules.normalizers:moleculenormalizer"
-
-[tool.pytest.ini_options]
-testpaths = [
-  "tests/normalizer"
-]
-python_files = [
-  "test_*.py"
-]
-python_classes = [
-  "Test*"
-]
-python_functions = [
-  "test_*"
-]
