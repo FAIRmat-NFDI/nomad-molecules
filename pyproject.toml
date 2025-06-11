@@ -23,7 +23,7 @@ dependencies = [
     "nomad-lab>=1.1.7", #1.3.13
     "rdkit",
     "openbabel-wheel",
-    "molid @ git+ssh://git@github.com/FAIRmat-NFDI/molid.git"
+    "molid @ git+https://github.com/FAIRmat-NFDI/molid.git"
 ]
 
 [project.urls]
