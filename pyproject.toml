@@ -112,3 +112,17 @@ where = ["src"]
 
 [project.entry-points.'nomad.plugin']
 moleculenormalizer = "nomad_plugin_molecules.normalizers:moleculenormalizer"
+
+[tool.pytest.ini_options]
+testpaths = [
+  "tests/normalizer"
+]
+python_files = [
+  "test_*.py"
+]
+python_classes = [
+  "Test*"
+]
+python_functions = [
+  "test_*"
+]
