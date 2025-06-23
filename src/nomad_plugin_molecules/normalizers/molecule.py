@@ -102,4 +102,3 @@ class MoleculeNormalizer(Normalizer):
 
             topology = generate_topology_util(topology, inchikey, molecule_data, logger)
 
-        return topologies

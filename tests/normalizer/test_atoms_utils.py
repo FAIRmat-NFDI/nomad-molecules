@@ -247,6 +247,7 @@ def test_validate_atom_count(case, logger):
 
 # ---------------------- validate_dimensionality Tests ----------------------
 # Valid (0D) and invalid (1D) systems
+#TODO: should go through the whole pipeline
 @pytest.mark.parametrize(
     "atoms, expected_dimensionality, expected_result, log_message, case_description", [
         ("zero_d_atoms", 0, True, None, "Valid 0D system"),
@@ -265,6 +266,7 @@ def test_validate_dimensionality(atoms, expected_dimensionality, expected_result
         logger.warning.assert_not_called()
 
 # ---------------------- query_molecule_database_util Tests ----------------------
+#TODO: push to molid
 @pytest.mark.parametrize(
     "atoms_fixture, expected_inchikey, expected_data, full_match, log_messages, case_description", [
         ("simple_water_atoms", "XLYOFNOQVPJJNP-UHFFFAOYSA-N", [{"id": 1, "InChIKey": "XLYOFNOQVPJJNP-UHFFFAOYSA-N", 'InChIKey14': "XLYOFNOQVPJJNP", "Name": "Water", "Formula": "H2O"}], True, ["Computed InChIKey: XLYOFNOQVPJJNP-UHFFFAOYSA-N"], "molecule_found"),
