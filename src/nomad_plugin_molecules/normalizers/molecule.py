@@ -1,39 +1,29 @@
 import os
-from nomad.normalizing import Normalizer
-from nomad.datamodel.results import Cheminformatics
-from .atoms_utils import wrap_atoms, validate_atom_count, validate_dimensionality, query_molecule_database_util, generate_topology_util, get_atoms_data
-from molid.search.service import SearchService, SearchConfig
-from molid.utils.config_loader import load_config
+from pathlib import Path
 
+from molid.search.service import SearchService, SearchConfig
+from molid.utils.settings import save_config
+from nomad.datamodel.results import Cheminformatics
+from nomad.normalizing import Normalizer
+from nomad.config import config
+
+from .atoms_utils import (
+    generate_topology_util,
+    get_atoms_data,
+    query_molecule_database_util,
+    validate_atom_count,
+    validate_dimensionality,
+    wrap_atoms,
+)
 
 class MoleculeNormalizer(Normalizer):
     """Normalizer for molecular data extraction."""
 
-    def __init__(self, max_atoms=100, min_atoms=2, database_file=None, config_path="config.yaml", **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # locate config.yaml: if it's not in cwd, fall back to the one shipped with the plugin
-        if not os.path.isfile(config_path):
-            # assumes config.yaml lives two levels up from this file
-            config_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                       os.pardir, os.pardir, "config.yaml"))
-
-        cfg = load_config(config_path)
-
-        # force offline-basic mode here:
-        search_cfg = SearchConfig(
-            mode="offline-basic",          # lock it down
-        )
-
-        # supply to your service
-        self.search_service = SearchService(
-            master_db=cfg.master_db,
-            cache_db=cfg.cache_db,
-            cfg=search_cfg
-        )
-
-        self.database_file = database_file or cfg.master_db
-        self.max_atoms = max_atoms
-        self.min_atoms = min_atoms
+        # This is not how its suppose to be but for now the only solution
+        from simulationworkflowschema import load_modules
+        load_modules()
 
     def normalize(self, archive, logger=None) -> list:
         """
@@ -46,59 +36,108 @@ class MoleculeNormalizer(Normalizer):
         Returns:
             List of processed topology/system objects.
         """
-        logger.info("Starting molecular normalization process.")
+        entry_point_id = "nomad_plugin_molecules.normalizers:moleculenormalizer"
+        # maybe easier to mock this function for testing with db_path and so on
+        cfg = config.get_plugin_entry_point(entry_point_id)
 
-        if not getattr(archive, "results", False):
-            logger.info("No results found in archive. Exiting normalization.")
-            return []
-        elif not getattr(archive.results, "material", False):
-            logger.info("No material found in archive. Exiting normalization.")
-            return []
+        MOLID_MODE = cfg.MOLID_MODE
+        if MOLID_MODE == "offline-basic":
+            database_file = cfg.MOLID_MASTER_DB
+            save_config(master_db = cfg.MOLID_MASTER_DB, mode = MOLID_MODE)
+        else:
+            database_file = cfg.MOLID_CACHE_DB
+            save_config(cache_db = cfg.MOLID_CACHE_DB, mode = MOLID_MODE)
+        max_atoms = cfg.max_atoms
+        min_atoms = cfg.min_atoms
 
-        try:
-            topologies = archive.results.material.topology
-        except AttributeError as e:
-            logger.error("Topology data not found in archive.", exc_info=True)
-            return []
+        if logger:
+            logger.info("Starting molecular normalization process.")
+        # Quick existence checks
+        results = getattr(archive, "results", None)
+        if not results:
+            if logger:
+                logger.info("No results found in archive. Exiting normalization.")
+            return
 
+        material = getattr(results, "material", None)
+        if not material:
+            if logger:
+                logger.info("No material found in archive. Exiting normalization.")
+            return
+
+        topologies = getattr(material, "topology", []) or []
+        if not topologies:
+            if logger:
+                logger.info("No topology data found in archive. Exiting normalization.")
+            return
+
+        # Process each topology
         for topology in topologies:
-            if topology.atoms_ref:
-                atoms_ref = topology.atoms_ref
-            if topology.atoms:
-                atoms_ref = topology.atoms
-
-            if topology.label == 'conventional cell':
-                logger.debug("Skipping 'conventional cell' topology.")
+            label = getattr(topology, "label", None)
+            if label == 'conventional cell':
+                if logger:
+                    logger.debug("Skipping 'conventional cell' topology.")
+                continue
+            if label == 'original' and len(topologies) > 1:
+                if logger:
+                    logger.debug("Skipping 'original' topology in a composite system.")
                 continue
 
-            ase_atoms = get_atoms_data(topology, atoms_ref, logger)
+            # Determine atoms reference
+            atoms_ref = None
+            if getattr(topology, "atoms_ref", None):
+                atoms_ref = topology.atoms_ref
+            elif getattr(topology, "atoms", None):
+                atoms_ref = topology.atoms
+            else:
+                if logger:
+                    logger.warning("No atoms or atoms_ref found in topology; skipping.")
+                continue
 
+            # Retrieve ASE Atoms
+            ase_atoms = get_atoms_data(topology, atoms_ref, logger)
             if ase_atoms is None:
                 continue
 
-            # Validate atom count (must be >1 and <= max_atoms)
-            if not validate_atom_count(ase_atoms, self.min_atoms, self.max_atoms, logger):
+            # Validate atom count
+            if not validate_atom_count(ase_atoms, min_atoms, max_atoms, logger):
                 continue
 
+            # Unwrap periodic coordinates if fully periodic
             if all(ase_atoms.pbc):
                 ase_atoms = wrap_atoms(ase_atoms)
 
+            # Ensure a 0D (non-periodic) molecule
             if not validate_dimensionality(ase_atoms, logger):
                 continue
 
-            # Query the local PubChem database.
-            inchikey, molecule_data, matched_full = query_molecule_database_util(ase_atoms, self.database_file, logger)
-
-            if not matched_full:
-                logger.info("Molecule identification based on the first block of the InChIKey (connectivity only, first 14 characters).")
-            topology.cheminformatics = Cheminformatics(
-                smiles   = molecule_data[0]["SMILES"],
-                inchi_key= molecule_data[0]["InChIKey"],
-                inchi    = molecule_data[0]["InChI"])
-
-
-            if inchikey is None:
+            # Query the local PubChem offline DB
+            inchikey, molecule_data, matched_full = query_molecule_database_util(
+                ase_atoms, database_file, logger
+            )
+            if inchikey is None or matched_full is None:
                 continue
 
-            topology = generate_topology_util(topology, inchikey, molecule_data, logger)
+            # Attach cheminformatics metadata
+            if matched_full:
+                match_type = 'full structure'
+                topology.cheminformatics = Cheminformatics(
+                    smiles=molecule_data[0]["SMILES"],
+                    inchi_key=molecule_data[0]["InChIKey"],
+                    inchi=molecule_data[0]["InChI"],
+                    match_type=match_type
+                )
+            else:
+                if logger:
+                    logger.info(
+                        "Molecule identification based on the first block of the InChIKey "
+                        "(connectivity only, first 14 characters)."
+                    )
+                match_type = 'skeleton (core)'
+                topology.cheminformatics = Cheminformatics(
+                    inchi_key=inchikey,
+                    match_type=match_type
+                )
 
+            # Generate NOMAD-compatible topology data
+            generate_topology_util(topology, inchikey, molecule_data, logger)

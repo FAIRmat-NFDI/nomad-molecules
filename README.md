@@ -1,57 +1,73 @@
-# NOMAD Molecular Parser & Normalizer
-# nomad-plugin-molecules
+# nomad-molecules
 
-This plugin provides parsing and normalization for molecular structure data within the NOMAD framework.
+**NOMAD Molecular Normalizer**
+
+A plugin for the [NOMAD](https://nomad-coe.eu/) framework that extracts, parses, and normalizes molecular structure data (e.g., small molecules) from computational archives, enriching them with cheminformatics metadata from an offline PubChem database.
+
+---
+
+## Features
+
+* **Structure Extraction**: Identify and unwrap 0D molecular topologies from NOMAD archives.
+* **InChIKey Conversion**: Compute InChIKeys for ASE `Atoms` objects using Open Babel.
+* **Offline PubChem Lookup**: Query a local PubChem SQLite database for full or skeletal (InChIKey14) matches.
+* **Metadata Injection**: Attach `smiles`, `inchi`, `inchi_key`, and `match_type` into `topology.cheminformatics`.
+* **Configurable Limits**: Filter by minimum/maximum atom counts to skip very small or very large systems.
+* **Extensible**: Easily override database paths and search modes via environment variables or Pydantic settings.
+
+---
 
 ## Installation
-```
-pip install .
-```
 
-### Installing OpenBabel via pip
-OpenBabel is a key dependency for this project and is included in `pyproject.toml` and `requirements.txt` as `openbabel-wheel`, so it should be installed automatically. If for any reason it isn’t, you can manually install it with:
+### 1. Prerequisites
+
+* Python ≥ 3.8
+* ASE (Atomic Simulation Environment)
+* NOMAD Python client (`nomad-client`)
+* Open Babel
+
+### 2. Install via pip
+
 ```sh
-pip install openbabel-wheel
+pip install nomad-plugin-molecules
 ```
-**Note:**
-OpenBabel relies on system libraries such as libxrender1 and libxext6. In minimal installations (including Docker containers) these libraries may be missing. If you encounter errors indicating that `libXrender.so.1` or `libXext.so.6` is missing, you’ll need to install these libraries manually.
 
-After installing OpenBabel, verify the installation by running:
+> **Note:** The package depends on `openbabel-wheel` to provide Open Babel bindings.
+
+### 3. System Libraries
+
+Open Babel requires X11 rendering libraries on Linux. Install if missing:
+
+* **Debian/Ubuntu:**
+
+  ```sh
+  sudo apt-get update && sudo apt-get install libxrender1 libxext6
+  ```
+* **Fedora/CentOS/RHEL:**
+
+  ```sh
+  sudo dnf install libXrender libXext
+  ```
+* **Arch Linux:**
+
+  ```sh
+  sudo pacman -S libxrender libxext
+  ```
+* **macOS:**
+
+  * Install [XQuartz](https://www.xquartz.org/).
+* **Windows:**
+
+  * When using WSL or Cygwin, use the corresponding Linux commands above. Otherwise, Windows typically does not require these libraries unless you are running Linux-based tools.
+
+Verify Open Babel:
 
 ```sh
 obabel -V
 ```
-This command should display the version of Open Babel, confirming that it is installed correctly.
 
-#### Installing System Dependencies
+---
 
-**Debian/Ubuntu:**
-```sh
-sudo apt-get update
-sudo apt-get install libxrender1 libxext6
-```
+## License
 
-**Fedora/CentOS/RHEL:**
-```sh
-sudo dnf install libXrender libXext
-```
-
-**Arch Linux:**
-```sh
-sudo pacman -S libxrender libxext
-```
-
-**macOS:**
-Install XQuartz to provide the necessary X11 libraries.
-
-**Windows:**
-If you are running a Linux environment (e.g., via WSL or Cygwin), use the appropriate Linux commands. Otherwise, Windows typically does not require these libraries unless you are running Linux-based tools.
-
-## Usage
-```
-
-```
-
-## Features
-- Converts structures to InChIKeys.
-- Queries PubChem database for additional molecular details.
+This project is licensed under the [BSD 3-Clause License](LICENSE).

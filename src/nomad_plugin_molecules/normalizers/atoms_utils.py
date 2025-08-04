@@ -1,10 +1,14 @@
 import os
+
 import numpy as np
+
 from ase import Atoms
 from matid.geometry import get_dimensionality
-from nomad.datamodel.results import Material, Results
+from molid.search.db_lookup import basic_offline_search
 from molid.utils.conversion import atoms_to_inchikey
-from molid.search.db_lookup  import basic_offline_search
+
+# threshold below which we treat a cell as singular
+SINGULAR_CELL_DET_THRESHOLD = 1e-8
 
 
 def get_atoms_data(topology, atoms_ref, logger):
@@ -13,16 +17,23 @@ def get_atoms_data(topology, atoms_ref, logger):
 
     Args:
         topology: The topology object containing atom information.
+        atoms_ref: Reference to ASE atoms or indices.
         logger: Logger for logging messages.
 
     Returns:
-        The atoms data if available; otherwise, None.
+        The ASE Atoms object if available; otherwise, None.
     """
-    # import pdb; pdb.set_trace()
-    if topology.indices is not None:
+    # If specific indices are provided, select the first block
+    if getattr(topology, 'indices', None) is not None:
         logger.info("Topology contains indices.")
-        atoms = atoms_ref.to_ase()[topology.indices[0]]
-        return atoms
+        try:
+            # indices may be a nested list
+            idx = topology.indices[0]
+            return atoms_ref.to_ase()[idx]
+        except Exception as e:
+            logger.error(f"Failed to apply topology indices: {e}")
+            return None
+    # Otherwise, use the full Atoms
     elif topology.atoms is not None:
         return topology.atoms.to_ase()
     elif topology.atoms_ref is not None:
@@ -35,17 +46,11 @@ def get_atoms_data(topology, atoms_ref, logger):
 def wrap_atoms(atoms: Atoms) -> Atoms:
     """
     Unwraps atom positions using the minimum image convention.
-
-    Args:
-        atoms: ASE Atoms object.
-
-    Returns:
-        ASE Atoms object with unwrapped positions.
     """
     positions = atoms.get_positions(copy=True)
     cell = atoms.get_cell()
     # Skip unwrapping if the cell is singular
-    if abs(np.linalg.det(cell)) < 1e-8:
+    if abs(np.linalg.det(cell)) < SINGULAR_CELL_DET_THRESHOLD:
         return atoms
 
     ref = positions[0]
@@ -59,32 +64,23 @@ def wrap_atoms(atoms: Atoms) -> Atoms:
         positions[i] = ref + disp
 
     atoms.set_positions(positions)
-    atoms.center()  # Optionally recenter the molecule.
+    atoms.center()
     return atoms
 
 
 def validate_atom_count(atoms_data: Atoms, min_atoms: int, max_atoms: int, logger) -> bool:
     """
-    Checks if the number of atoms in the system is within acceptable limits.
-
-    Args:
-        atoms_data: ASE Atoms object.
-        min_atoms: Minimum number of atoms required.
-        max_atoms: Maximum number of atoms allowed.
-        logger: Logger for logging messages.
-
-    Returns:
-        True if the atom count is acceptable; otherwise, False.
+    Checks if the number of atoms is within acceptable limits.
     """
     num_atoms = len(atoms_data)
     if num_atoms < min_atoms:
         logger.warning(
-            f"System has only {num_atoms} atoms, which is less than the minimum required {min_atoms}. Skipping normalization and continue."
+            f"System has only {num_atoms} atoms; minimum required is {min_atoms}."
         )
         return False
     if num_atoms > max_atoms:
         logger.warning(
-            f"System has {num_atoms} atoms, which exceeds the maximum allowed {max_atoms}. Skipping normalization and continue."
+            f"System has {num_atoms} atoms; exceeds maximum allowed {max_atoms}."
         )
         return False
     return True
@@ -92,16 +88,8 @@ def validate_atom_count(atoms_data: Atoms, min_atoms: int, max_atoms: int, logge
 
 def validate_dimensionality(atoms: Atoms, logger) -> bool:
     """
-    Validates that the system is 0D (non-periodic) for processing.
-
-    Args:
-        atoms: ASE Atoms object.
-        logger: Logger for logging messages.
-
-    Returns:
-        True if the system is 0D; otherwise, False.
+    Validates that the system is 0D (non-periodic).
     """
-
     dimensionality = get_dimensionality(atoms)
     if dimensionality != 0:
         logger.warning(
@@ -111,7 +99,7 @@ def validate_dimensionality(atoms: Atoms, logger) -> bool:
     return True
 
 
-def query_molecule_database_util(atoms: Atoms, database_file, logger):
+def query_molecule_database_util(atoms: Atoms, database_file: str, logger):
     """
     Compute an InChIKey from the ASE Atoms, then do an offline-basic lookup.
     Returns (inchikey, results_list, full_match_flag).
@@ -121,48 +109,42 @@ def query_molecule_database_util(atoms: Atoms, database_file, logger):
         return None, [], None
 
     try:
-        # 1) compute InChIKey
         inchikey = atoms_to_inchikey(atoms)
         logger.info(f"Computed InChIKey: {inchikey}")
+    except Exception as e:
+        logger.error(f"Error computing InChIKey: {e}")
+        return None, [], None
 
-        # 2) query the master DB for full‐ or 14‐char match
+    try:
         results = basic_offline_search(database_file, inchikey)
-
         if not results or not results[0]:
             logger.info(f"No match found in local DB for {inchikey}")
             return inchikey, [], None
+    except Exception as e:
+        logger.error(f"Error querying local DB: {e}")
+        return None, [], None
 
-        # 3) detect whether it was a full‐Key match
+    try:
         full_match = (results[0]["InChIKey"] == inchikey)
         return inchikey, results, full_match
-
     except Exception as e:
-        logger.error(f"Error querying local PubChem DB: {e}")
+        logger.error(f"Error processing DB results: {e}")
         return None, [], None
 
 
 def generate_topology_util(system, inchikey, molecule_data, logger):
     """
-    Generates molecular topology data in a format compatible with NOMAD.
-
-    Args:
-        system: The original topology/system object.
-        inchikey: The InChIKey of the molecule.
-        molecule_data: Data retrieved from the database.
-        logger: Logger for logging messages.
-
-    Returns:
-        Updated system object with molecular topology data, or None if generation fails.
+    Generates molecular topology data in NOMAD format.
     """
-    if not molecule_data:
+    if molecule_data is None:
         logger.info(f"No molecule data found for InChIKey {inchikey}.")
-        return []
+        return system
 
-    if not system.label:
+    if not getattr(system, 'label', None):
         system.label = 'molecule'
-    if not system.method:
+    if not getattr(system, 'method', None):
         system.method = 'parser'
-    if not system.building_block:
+    if not getattr(system, 'building_block', None):
         system.building_block = 'molecule'
 
     return system

@@ -196,7 +196,7 @@ test_validate_atom_count_cases = [
         "min_atoms": 2,
         "max_atoms": 5,
         "expected_result": False,
-        "log_message": "System has only 1 atoms, which is less than the minimum required 2. Skipping normalization and continue.",
+        "log_message": f"System has only 1 atoms; minimum required is 2.",
         "case_description": "Below minimum atom count"
     },
     {
@@ -216,7 +216,7 @@ test_validate_atom_count_cases = [
         "min_atoms": 2,
         "max_atoms": 4,
         "expected_result": False,
-        "log_message": "System has 5 atoms, which exceeds the maximum allowed 4. Skipping normalization and continue.",
+        "log_message": "System has 5 atoms; exceeds maximum allowed 4.",
         "case_description": "Exceeds maximum atom count"
     }
 ]
@@ -307,7 +307,7 @@ def test_generate_topology_util_no_molecule_data(empty_system, logger):
     inchikey = "DUMMY-KEY"
     molecule_data = None  # No data provided
     result = generate_topology_util(empty_system, inchikey, molecule_data, logger)
-    assert result == [], f"No molecule data found for InChIKey {inchikey}."
+    assert result == empty_system, f"No molecule data found for InChIKey {inchikey}."
 
 # Happy path: system attributes updated when none exist
 def test_generate_topology_util_updates_system_and_archive(empty_system, logger):
