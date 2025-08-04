@@ -13,7 +13,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: Apache Software License",
 ]
-name = 'nomad-plugin-molecules'
+name = 'nomad-molecules'
 version = "0.1.5"
 description = "Plugin repository containing tools for molecule information extraction."
 readme = "README.md"
@@ -24,14 +24,11 @@ dependencies = [
     "nomad-schema-plugin-run>=1.0.3",
     "rdkit",
     "openbabel-wheel",
-    "molid @ git+https://github.com/FAIRmat-NFDI/molid.git"
+    "molid"
 ]
 
 [project.urls]
-repository = "https://github.com/TheaDene/nomad-plugin-molecules"
-
-[tool.uv]
-index-url = "https://gitlab.mpcdf.mpg.de/api/v4/projects/2187/packages/pypi/simple"
+repository = "https://github.com/FAIRmat-NFDI/nomad-molecules"
 
 [project.optional-dependencies]
 dev = ["ruff", "pytest", "structlog"]
@@ -105,7 +102,7 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.per-file-ignores]
-"src/nomad_plugin_molecules/normalizers/__init__.py" = ["PLC0415"]
+"src/nomad_molecules/normalizers/__init__.py" = ["PLC0415"]
 
 
 [tool.setuptools]
@@ -115,4 +112,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [project.entry-points.'nomad.plugin']
-moleculenormalizer = "nomad_plugin_molecules.normalizers:moleculenormalizer"
+moleculesnormalizer = "nomad_molecules.normalizers:moleculesnormalizer"

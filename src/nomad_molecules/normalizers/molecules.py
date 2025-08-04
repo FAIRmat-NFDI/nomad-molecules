@@ -1,11 +1,7 @@
-import os
-from pathlib import Path
-
-from molid.search.service import SearchService, SearchConfig
-from molid.utils.settings import save_config
-from nomad.datamodel.results import Cheminformatics
-from nomad.normalizing import Normalizer
 from nomad.config import config
+from nomad.normalizing import Normalizer
+from nomad.datamodel.results import Cheminformatics
+from molid.utils.settings import save_config
 
 from .atoms_utils import (
     generate_topology_util,
@@ -16,7 +12,7 @@ from .atoms_utils import (
     wrap_atoms,
 )
 
-class MoleculeNormalizer(Normalizer):
+class MoleculesNormalizer(Normalizer):
     """Normalizer for molecular data extraction."""
 
     def __init__(self, **kwargs):
@@ -36,17 +32,17 @@ class MoleculeNormalizer(Normalizer):
         Returns:
             List of processed topology/system objects.
         """
-        entry_point_id = "nomad_plugin_molecules.normalizers:moleculenormalizer"
+        entry_point_id = "nomad_molecules.normalizers:moleculesnormalizer"
         # maybe easier to mock this function for testing with db_path and so on
         cfg = config.get_plugin_entry_point(entry_point_id)
 
-        MOLID_MODE = cfg.MOLID_MODE
-        if MOLID_MODE == "offline-basic":
-            database_file = cfg.MOLID_MASTER_DB
-            save_config(master_db = cfg.MOLID_MASTER_DB, mode = MOLID_MODE)
+        molid_mode = cfg.molid_mode
+        if molid_mode == "offline-basic":
+            database_file = cfg.molid_master_db
+            save_config(master_db = cfg.molid_master_db, mode = molid_mode)
         else:
-            database_file = cfg.MOLID_CACHE_DB
-            save_config(cache_db = cfg.MOLID_CACHE_DB, mode = MOLID_MODE)
+            database_file = cfg.molid_cache_db
+            save_config(cache_db = cfg.molid_cache_db, mode = molid_mode)
         max_atoms = cfg.max_atoms
         min_atoms = cfg.min_atoms
 

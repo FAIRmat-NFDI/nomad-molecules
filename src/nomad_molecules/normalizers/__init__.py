@@ -2,17 +2,17 @@ from nomad.config.models.plugins import NormalizerEntryPoint
 from pydantic import Field
 
 
-class MoleculeNormalizerEntryPoint(NormalizerEntryPoint):
+class MoleculesNormalizerEntryPoint(NormalizerEntryPoint):
     # model_config = ConfigDict(extra='ignore')
-    MOLID_MASTER_DB: str = Field(
+    molid_master_db: str = Field(
         'pubchem_data_FULL.db',
         description='Path to the PubChem “master” offline database'
     )
-    MOLID_CACHE_DB: str = Field(
+    molid_cache_db: str = Field(
         'user_cache.db',
         description='Path to the PubChem cache database'
     )
-    MOLID_MODE: str = Field(
+    molid_mode: str = Field(
         'offline-basic',
         description='MolID search mode (offline-basic, offline-advanced, …)'
     )
@@ -28,19 +28,19 @@ class MoleculeNormalizerEntryPoint(NormalizerEntryPoint):
     def load(self):
         # Lazy import inside the function to avoid circular import
         # noqa: PLC0415 — we *want* this lazy import
-        from nomad_plugin_molecules.normalizers.molecule import MoleculeNormalizer
+        from nomad_molecules.normalizers.molecules import MoleculesNormalizer
 
-        return MoleculeNormalizer(**self.dict())
+        return MoleculesNormalizer(**self.dict())
 
 
-moleculenormalizer = MoleculeNormalizerEntryPoint(
-    name='MoleculeNormalizer',
+moleculesnormalizer = MoleculesNormalizerEntryPoint(
+    name='MoleculesNormalizer',
     description='Normalizer that identifies molecules in results.material.topology and ' \
     'adds new molecule-related information extracted from PubChem.',
-    master_db='./pubchem_data_FULL.db',
     level=6,
-    MOLID_CACHE_DB = "./user_cache.db",
-    MOLID_MODE = "offline-basic",
+    molid_master_db='./pubchem_data_FULL.db',
+    molid_cache_db = "./user_cache.db",
+    molid_mode = "offline-basic",
     max_atoms = 100,
     min_atoms = 2
 )

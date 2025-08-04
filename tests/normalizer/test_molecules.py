@@ -11,6 +11,7 @@ from nomad.datamodel import EntryArchive, EntryMetadata
 from nomad.datamodel.metainfo import runschema
 from nomad.client import normalize_all
 from nomad.config import config
+from nomad_molecules.normalizers import MoleculesNormalizerEntryPoint
 
 # --------------------- ASE Atoms Fixtures ---------------------
 @pytest.fixture
@@ -82,16 +83,22 @@ def temporary_db(tmp_path, monkeypatch):
         conn.commit()
         conn.close()
 
-    class DummyCfg:
-        MOLID_MODE       = "offline-basic"
-        MOLID_MASTER_DB  = str(db)
-        MOLID_CACHE_DB   = str(db)
-        max_atoms        = 4
-        min_atoms        = 2
+    DummyCfg = MoleculesNormalizerEntryPoint(
+        molid_mode       = "offline-basic",
+        molid_master_db  = str(db),
+        molid_cache_db   = str(db),
+        max_atoms        = 4,
+        min_atoms        = 2)
+    # class DummyCfg:
+    #     molid_mode       = "offline-basic"
+    #     molid_master_db  = str(db)
+    #     molid_cache_db   = str(db)
+    #     max_atoms        = 4
+    #     min_atoms        = 2
 
     monkeypatch.setattr(type(config),
                         "get_plugin_entry_point",
-                        lambda self, entry_point_id: DummyCfg())
+                        lambda self, entry_point_id: DummyCfg)
 
 @pytest.fixture
 def logger():
@@ -229,16 +236,16 @@ def test_missing_DB(H2O_CO2_molecule_group, tmp_path, monkeypatch, caplog):
     # Point to a non‐existent DB
     missing_db = tmp_path / "nofile.db"
 
-    class DummyCfg:
-        MOLID_MODE       = "offline-basic"
-        MOLID_MASTER_DB  = str(missing_db)
-        MOLID_CACHE_DB   = str(missing_db)
-        max_atoms        = 4
-        min_atoms        = 2
+    DummyCfg = MoleculesNormalizerEntryPoint(
+        molid_mode       = "offline-basic",
+        molid_master_db  = str(missing_db),
+        molid_cache_db   = str(missing_db),
+        max_atoms        = 4,
+        min_atoms        = 2)
 
     monkeypatch.setattr(type(config),
                         "get_plugin_entry_point",
-                        lambda self, entry_point_id: DummyCfg())
+                        lambda self, entry_point_id: DummyCfg)
 
     archive = create_archive(H2O_CO2_molecule_group)
     system = archive.run[0].system[0]

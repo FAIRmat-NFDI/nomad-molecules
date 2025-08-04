@@ -7,7 +7,7 @@ from runschema.system import Atoms as NomadAtoms
 from unittest.mock import MagicMock, call
 from matid.geometry import get_dimensionality
 from nomad.datamodel.results import System
-from nomad_plugin_molecules.normalizers.atoms_utils import (
+from nomad_molecules.normalizers.atoms_utils import (
     get_atoms_data,
     wrap_atoms,
     validate_atom_count,
