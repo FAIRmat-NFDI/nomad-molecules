@@ -36,28 +36,27 @@ jobs:
         run: ruff check .
 
   build:
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          python-version: ["3.12"]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-        - name: Set up Python ${{ matrix.python-version }}
-          uses: actions/setup-python@v4
-          with:
-            python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-        - name: Upgrade pip
-          run: python -m pip install --upgrade pip
+      - name: Install project in editable mode
+        run: pip install -e .
 
-        - name: Install project in editable mode
-          run: pip install -e .
+      - name: Install test dependencies
+        run: pip install pytest structlog
 
-        - name: Install test dependencies
-          run: pip install pytest structlog
-
-        - name: Run tests
-          run: pytest
+      - name: Run tests
+        run: pytest -q
