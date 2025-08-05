@@ -18,8 +18,8 @@ class MoleculesNormalizer(Normalizer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # This is not how its suppose to be but for now the only solution
-        from simulationworkflowschema import load_modules
-        load_modules()
+        # from simulationworkflowschema import load_modules
+        # load_modules()
 
     def normalize(self, archive, logger=None) -> list:
         """
