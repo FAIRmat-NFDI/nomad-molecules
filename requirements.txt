@@ -1,3 +1,4 @@
+nomad-lab @ git+https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR.git@cheminformatics
 psutil==6.1.1
 pytest==8.3.4
 ase == 3.23.0
