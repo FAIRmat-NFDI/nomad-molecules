@@ -56,5 +56,8 @@ jobs:
         - name: Install project in editable mode
           run: pip install -e .
 
+        - name: Install test dependencies
+          run: pip install pytest structlog
+
         - name: Run tests
           run: pytest
