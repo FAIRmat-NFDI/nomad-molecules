@@ -59,6 +59,8 @@ jobs:
         run: |
           echo "nomad-lab version:"
           pip show nomad-lab
+          obabel -V
+
 
       - name: Install test dependencies
         run: pip install pytest structlog
