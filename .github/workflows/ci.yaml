@@ -69,7 +69,7 @@ jobs:
           curl -v https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR.git/  || echo “curl failed with $?”
       - name: Install test dependencies
         run: pip install pytest structlog
-        run: pip install .[all]  # make sure nomad-normalizing is included here
+        # run: pip install .[all]  # make sure nomad-normalizing is included here
       - name: List registered NOMAD normalizers (importlib.metadata)
         run: |
           python - << 'EOF'
