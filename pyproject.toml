@@ -111,5 +111,5 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[project.entry-points.'nomad.plugin']
-moleculesnormalizer = "nomad_molecules.normalizers:normalizer_entry_point"
+[project.entry-points."nomad.normalizer"]
+moleculesnormalizer = "nomad_molecules.normalizers:moleculesnormalizer"
