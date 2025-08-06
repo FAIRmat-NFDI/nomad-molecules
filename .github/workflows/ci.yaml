@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - debug/ci-workflow
   pull_request:
     branches:
       - main
+      - debug/ci-workflow
 
 jobs:
   lint:
