@@ -67,13 +67,17 @@ jobs:
       - name: Install test dependencies
         # run: pip install pytest structlog
         run: pip install .[all]  # make sure nomad-normalizing is included here
-      - name: List registered NOMAD normalizers
-        run: |
-          python - << 'EOF'
-          import pkg_resources
-          eps = [ep.name for ep in pkg_resources.iter_entry_points('nomad.normalizer')]
-          print("NOMAD normalizers discovered:", eps)
-          EOF
+      - name: List registered NOMAD normalizers (importlib.metadata)
+              run: |
+                python - << 'EOF'
+                import importlib.metadata
+                eps = [
+                    ep.name
+                    for ep in importlib.metadata.entry_points()
+                    if ep.group == 'nomad.normalizer'
+                ]
+                print("NOMAD normalizers discovered:", eps)
+                EOF
 
       - name: Run tests
         run: pytest -q
