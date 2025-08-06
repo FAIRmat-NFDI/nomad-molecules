@@ -68,16 +68,16 @@ jobs:
         # run: pip install pytest structlog
         run: pip install .[all]  # make sure nomad-normalizing is included here
       - name: List registered NOMAD normalizers (importlib.metadata)
-              run: |
-                python - << 'EOF'
-                import importlib.metadata
-                eps = [
-                    ep.name
-                    for ep in importlib.metadata.entry_points()
-                    if ep.group == 'nomad.normalizer'
-                ]
-                print("NOMAD normalizers discovered:", eps)
-                EOF
+        run: |
+          python - << 'EOF'
+          import importlib.metadata
+          eps = [
+              ep.name
+              for ep in importlib.metadata.entry_points()
+              if ep.group == 'nomad.normalizer'
+          ]
+          print("NOMAD normalizers discovered:", eps)
+          EOF
 
       - name: Run tests
         run: pytest -q
