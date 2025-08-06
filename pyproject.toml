@@ -112,4 +112,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [project.entry-points.'nomad.plugin']
-moleculesnormalizer = "nomad_molecules.normalizers:moleculesnormalizer"
+moleculesnormalizer = "nomad_molecules.normalizers:normalizer_entry_point"
