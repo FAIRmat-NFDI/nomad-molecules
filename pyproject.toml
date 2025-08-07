@@ -113,3 +113,6 @@ where = ["src"]
 
 [project.entry-points."nomad.plugin"]
 moleculesnormalizer = "nomad_molecules.normalizers:moleculesnormalizer"
+
+[project.entry-points."nomad.normalizer"]
+moleculesnormalizer = "nomad_molecules.normalizers:moleculesnormalizer"
