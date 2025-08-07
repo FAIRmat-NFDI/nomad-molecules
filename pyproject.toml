@@ -17,12 +17,10 @@ name = 'nomad-molecules'
 version = "0.1.5"
 description = "Plugin repository containing tools for molecule information extraction."
 readme = "README.md"
-authors = [{ name = "The NOMAD Authors" }]
+authors = [{ name = "Thea Denell", email = "thea.denell@physik.hu-berlin.de" },]
 license = { text = "Apache-2.0" }
 dependencies = [
-    "nomad-lab @ git+https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR.git@cheminformatics",
-    "nomad-schema-plugin-run>=1.0.3",
-    "rdkit",
+    "nomad-lab>=1.3.0",
     "openbabel-wheel",
     "molid"
 ]
