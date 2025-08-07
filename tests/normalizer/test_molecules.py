@@ -179,6 +179,40 @@ def add_H2O_CO2_groups(system):
 
 
 # ---------------------- Integration Tests ----------------------
+
+def test_parser_created_original_topology(H2O_CO2_molecule_group):
+    archive = create_archive(H2O_CO2_molecule_group)
+    # run _only_ the parser (normalize_all with no extra plugins will still run parser first)
+    normalize_all(archive)
+
+    # we should now have at least one topology: the “original”
+    topologies = archive.results.material.topology
+    assert topologies, "No topologies at all—parser never ran!"
+    assert topologies[0].label == "original"
+    assert topologies[0].method == "parser"
+
+def test_dump_topology_labels_for_debug(H2O_CO2_molecule_group, caplog):
+    archive = create_archive(H2O_CO2_molecule_group)
+    caplog.set_level(logging.INFO)
+    normalize_all(archive)
+    labels = [t.label for t in archive.results.material.topology]
+    # Force pytest to show us the labels
+    assert labels, f"CI saw no topologies at all! Labels: {labels}"
+
+def test_any_topology_survives_dimensionality():
+    water1 = ase.build.molecule('H2O')
+    water2 = ase.build.molecule('H2O')
+    water2.translate([5, 0, 0])
+    system = water1 + water2
+    system.set_cell([10, 10, 10])
+    system.set_pbc(False)
+    archive = create_archive(system)
+    normalize_all(archive)
+    # simple_water_atoms is 0D, so it _should_ survive dim‐check
+    topo = archive.results.material.topology[0]
+    assert topo.label == "original"
+
+
 def test_molecule_group(H2O_CO2_molecule_group, temporary_db, caplog):
     archive = create_archive(H2O_CO2_molecule_group)
     system = archive.run[0].system[0]
