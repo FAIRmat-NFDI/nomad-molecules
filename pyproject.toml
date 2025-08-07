@@ -20,7 +20,7 @@ readme = "README.md"
 authors = [{ name = "The NOMAD Authors" }]
 license = { text = "Apache-2.0" }
 dependencies = [
-    "nomad-lab @ git+ssh://git@gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR.git@cheminformatics#egg=nomad-lab",
+    "nomad-lab @ git+https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR.git@cheminformatics",
     "nomad-schema-plugin-run>=1.0.3",
     "rdkit",
     "openbabel-wheel",
